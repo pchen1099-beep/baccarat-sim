@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>模擬盤｜未下真錢｜手機版</title>
+<title>模擬盤｜未下真錢｜手機版（撲克牌）</title>
 <style>
 :root{
   --bg:#0c1016; --panel:#161f2b; --text:#f2f5f9; --muted:#8b9aab;
@@ -141,6 +141,66 @@ button{font-size:14px;font-weight:700;padding:7px 11px;border:none;border-radius
   .popup .theo{font-size:12px;word-break:break-word}
   .hand{min-width:0;flex:1}
 }
+
+/* ===== Poker cards ===== */
+.card-board{background:var(--panel);border-radius:8px;padding:8px;min-width:0;width:100%}
+.card-board .board-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.card-board .board-title b{font-size:13px}
+.card-sides{display:flex;gap:10px;align-items:stretch;justify-content:center}
+.card-side{flex:1;min-width:0;background:#0b1018;border-radius:8px;padding:8px 6px;text-align:center;border:2px solid transparent}
+.card-side.player{border-color:var(--player)}
+.card-side.banker{border-color:var(--banker)}
+.card-side .side-label{font-size:14px;font-weight:800;margin-bottom:4px}
+.card-side.player .side-label{color:var(--player)}
+.card-side.banker .side-label{color:var(--banker)}
+.card-side .side-pts{font-size:28px;font-weight:900;line-height:1.1;margin:2px 0 6px}
+.card-row{display:flex;gap:6px;justify-content:center;align-items:flex-end;min-height:92px;flex-wrap:wrap}
+.pcard{width:58px;height:84px;border-radius:8px;background:#fff;color:#111;position:relative;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);font-weight:800;user-select:none;
+  transform-style:preserve-3d;perspective:600px}
+.pcard .face,.pcard .back{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;
+  display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px}
+.pcard .face{background:#fff}
+.pcard .back{background:linear-gradient(135deg,#1a3a6b,#0d2244);border:2px solid #3a6ab0;
+  transform:rotateY(180deg)}
+.pcard .back::after{content:"";position:absolute;inset:8px;border:2px solid rgba(255,255,255,.25);border-radius:4px}
+.pcard.down .face{transform:rotateY(180deg)}
+.pcard.down .back{transform:rotateY(0)}
+.pcard.flip-in{animation:cardFlip .28s ease-out forwards}
+@keyframes cardFlip{
+  0%{transform:rotateY(90deg) scale(.92);opacity:.3}
+  100%{transform:rotateY(0) scale(1);opacity:1}
+}
+.pcard .cr{font-size:16px;line-height:1;text-align:left}
+.pcard .cs{font-size:22px;line-height:1;text-align:center;flex:1;display:flex;align-items:center;justify-content:center}
+.pcard .cb{font-size:16px;line-height:1;text-align:right;transform:rotate(180deg)}
+.pcard.red{color:#c0392b}
+.pcard.black{color:#1a1a1a}
+.pcard.third{transform:rotate(90deg);margin:0 10px;width:84px;height:58px}
+.pcard.third .face,.pcard.third .back{padding:4px 5px}
+.pcard.third .cr{font-size:14px}
+.pcard.third .cs{font-size:18px}
+.pcard.third .cb{font-size:14px}
+.pcard.third.flip-in{animation:cardFlipThird .28s ease-out forwards}
+@keyframes cardFlipThird{
+  0%{transform:rotate(90deg) scale(.92);opacity:.3}
+  100%{transform:rotate(90deg) scale(1);opacity:1}
+}
+.fast-toggle{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.fast-toggle input{width:16px;height:16px;accent-color:#6b5cff}
+@media (max-width:480px){
+  .card-board{padding:8px 6px}
+  .card-sides{gap:6px}
+  .card-side{padding:6px 4px}
+  .card-side .side-pts{font-size:26px}
+  .pcard{width:64px;height:92px;border-radius:9px}
+  .pcard .cr,.pcard .cb{font-size:17px}
+  .pcard .cs{font-size:24px}
+  .pcard.third{width:92px;height:64px;margin:0 6px}
+  .card-row{min-height:100px;gap:5px}
+  .hands{display:none} /* big cards replace tiny summary on phone */
+}
+
 </style>
 </head>
 <body>
@@ -148,6 +208,25 @@ button{font-size:14px;font-weight:700;padding:7px 11px;border:none;border-radius
   <div class="banner">模擬盤，未下真錢｜假金額｜非任何平台</div>
 
   <div class="row top sec-play">
+    <div class="card-board" id="cardBoard">
+      <div class="board-title">
+        <b>本手牌面（模擬）</b>
+        <label class="fast-toggle"><input type="checkbox" id="fastMode"/> 快速模式（關動畫）</label>
+      </div>
+      <div class="card-sides">
+        <div class="card-side player">
+          <div class="side-label">閒</div>
+          <div class="side-pts" id="pPtsBig">—</div>
+          <div class="card-row" id="pCardRow"></div>
+        </div>
+        <div class="card-side banker">
+          <div class="side-label">莊</div>
+          <div class="side-pts" id="bPtsBig">—</div>
+          <div class="card-row" id="bCardRow"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="panel" style="min-width:210px">
       <label>假餘額（模擬幣）</label>
       <div class="bal" id="bal">10,000</div>
@@ -282,12 +361,29 @@ function setAutoN(n){ document.getElementById('autoN').value=n; }
 
 function fmt(n){ return Number(n).toLocaleString('en-US'); }
 function sideName(s){ return s==='B'?'莊':(s==='P'?'閒':'和'); }
-function cardLabel(v){ return v===0?'10':(v===1?'A':String(v)); }
+const SUIT_SYM={S:'♠',H:'♥',D:'♦',C:'♣'};
+const SUIT_COLOR={S:'black',H:'red',D:'red',C:'black'};
+const RANK_DEFS=[
+  {rank:'A',v:1},{rank:'2',v:2},{rank:'3',v:3},{rank:'4',v:4},{rank:'5',v:5},
+  {rank:'6',v:6},{rank:'7',v:7},{rank:'8',v:8},{rank:'9',v:9},
+  {rank:'10',v:0},{rank:'J',v:0},{rank:'Q',v:0},{rank:'K',v:0}
+];
+function cardLabel(c){
+  if(c==null) return '';
+  if(typeof c==='number') return c===0?'10':(c===1?'A':String(c));
+  return c.rank+SUIT_SYM[c.suit];
+}
+function cardVal(c){ return (typeof c==='object')?c.v:c; }
 
 function makeShoe(){
-  const one=[1,2,3,4,5,6,7,8,9,0,0,0,0];
   shoe=[];
-  for(let d=0;d<DECKS;d++) for(let s=0;s<4;s++) shoe.push(...one);
+  for(let d=0;d<DECKS;d++){
+    for(const suit of ['S','H','D','C']){
+      for(const r of RANK_DEFS){
+        shoe.push({rank:r.rank, v:r.v, suit:suit, id:d+'-'+suit+'-'+r.rank});
+      }
+    }
+  }
   for(let i=shoe.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [shoe[i],shoe[j]]=[shoe[j],shoe[i]];
@@ -296,7 +392,7 @@ function makeShoe(){
 makeShoe();
 
 function drawCard(){ if(shoe.length<6) makeShoe(); return shoe.pop(); }
-function tot(c){ return c.reduce((a,b)=>a+b,0)%10; }
+function tot(c){ return c.reduce((a,b)=>a+cardVal(b),0)%10; }
 function bankerDraws(bt,p3){
   if(p3===null) return bt<=5;
   if(bt<=2) return true;
@@ -307,14 +403,71 @@ function bankerDraws(bt,p3){
   return false;
 }
 function playHand(){
-  const p=[drawCard(),drawCard()], b=[drawCard(),drawCard()];
-  let pt=tot(p), bt=tot(b), p3=null;
-  if(pt<8 && bt<8){
-    if(pt<=5){ p3=drawCard(); p.push(p3); pt=tot(p); }
-    if(bankerDraws(bt,p3)){ b.push(drawCard()); bt=tot(b); }
+  // Deal order: P1, B1, P2, B2, then optional thirds. Cards are real shoe cards (suit+rank).
+  const p1=drawCard(), b1=drawCard(), p2=drawCard(), b2=drawCard();
+  const p=[p1,p2], b=[b1,b2];
+  let pt=tot(p), bt=tot(b), p3=null, p3card=null, b3card=null;
+  const natural = (pt>=8 || bt>=8);
+  if(!natural){
+    if(pt<=5){ p3card=drawCard(); p.push(p3card); p3=cardVal(p3card); pt=tot(p); }
+    if(bankerDraws(bt,p3)){ b3card=drawCard(); b.push(b3card); bt=tot(b); }
   }
   const outcome = pt>bt?'P':(bt>pt?'B':'T');
-  return {p,b,pt,bt,outcome};
+  return {p,b,pt,bt,outcome, natural, dealSeq:[p1,b1,p2,b2].concat(p3card?[p3card]:[]).concat(b3card?[b3card]:[]),
+    slots:[{side:'P',i:0,c:p1},{side:'B',i:0,c:b1},{side:'P',i:1,c:p2},{side:'B',i:1,c:b2}]
+      .concat(p3card?[{side:'P',i:2,c:p3card}]:[])
+      .concat(b3card?[{side:'B',i:2,c:b3card}]:[])};
+}
+
+let animating=false;
+function isFastMode(){ const el=document.getElementById('fastMode'); return el?el.checked:false; }
+function clearCardBoard(){
+  const pr=document.getElementById('pCardRow'), br=document.getElementById('bCardRow');
+  if(pr) pr.innerHTML=''; if(br) br.innerHTML='';
+  const pp=document.getElementById('pPtsBig'), bp=document.getElementById('bPtsBig');
+  if(pp) pp.textContent='—'; if(bp) bp.textContent='—';
+}
+function makeCardEl(card, opts){
+  opts=opts||{};
+  const el=document.createElement('div');
+  const color=SUIT_COLOR[card.suit]||'black';
+  el.className='pcard '+color+(opts.third?' third':'')+(opts.down?' down':'');
+  const face=document.createElement('div'); face.className='face';
+  const sym=SUIT_SYM[card.suit];
+  face.innerHTML='<div class="cr">'+card.rank+'</div><div class="cs">'+sym+'</div><div class="cb">'+card.rank+'</div>';
+  const back=document.createElement('div'); back.className='back';
+  el.appendChild(face); el.appendChild(back);
+  return el;
+}
+function renderCardsInstant(h){
+  const pr=document.getElementById('pCardRow'), br=document.getElementById('bCardRow');
+  if(!pr||!br) return;
+  pr.innerHTML=''; br.innerHTML='';
+  h.p.forEach((c,i)=>pr.appendChild(makeCardEl(c,{third:i===2})));
+  h.b.forEach((c,i)=>br.appendChild(makeCardEl(c,{third:i===2})));
+  document.getElementById('pPtsBig').textContent=h.pt;
+  document.getElementById('bPtsBig').textContent=h.bt;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+async function animateDeal(h){
+  clearCardBoard();
+  const pr=document.getElementById('pCardRow'), br=document.getElementById('bCardRow');
+  const shown={P:[],B:[]};
+  const gap=320;
+  for(const step of h.slots){
+    const row=step.side==='P'?pr:br;
+    const el=makeCardEl(step.c,{third:step.i===2});
+    el.classList.add('flip-in');
+    row.appendChild(el);
+    shown[step.side].push(step.c);
+    // live running total of revealed cards
+    const pts=tot(shown[step.side]);
+    document.getElementById(step.side==='P'?'pPtsBig':'bPtsBig').textContent=pts;
+    await sleep(gap);
+  }
+  document.getElementById('pPtsBig').textContent=h.pt;
+  document.getElementById('bPtsBig').textContent=h.bt;
+  await sleep(180);
 }
 
 function appendRoad(outcome){
@@ -487,6 +640,10 @@ function showHandUI(h, betSide, amt, settled, paved){
   document.getElementById('bPts').textContent=h.bt;
   document.getElementById('pCards').textContent=h.p.map(cardLabel).join(' · ');
   document.getElementById('bCards').textContent=h.b.map(cardLabel).join(' · ');
+  const ppb=document.getElementById('pPtsBig'), bpb=document.getElementById('bPtsBig');
+  if(ppb) ppb.textContent=h.pt; if(bpb) bpb.textContent=h.bt;
+  // If not mid-animation, keep board in sync (auto/fast/pave)
+  if(!animating) renderCardsInstant(h);
 
   const pnl=document.getElementById('pnlLine');
   if(paved || !settled){
@@ -557,19 +714,40 @@ function pick(side){
   document.getElementById('handLabel').innerHTML='本手押：<span style="color:'+(side==='B'?'var(--banker)':(side==='P'?'var(--player)':'var(--tie)'))+'">'+sideName(side)+'</span>';
 }
 
-function dealBet(){
+async function dealBet(){
+  if(animating || auto.running) return;
   const amt=Math.max(1,Math.floor(Number(document.getElementById('amt').value)||0));
   if(!choice){ alert('先選押莊／閒／和'); return; }
   if(amt>balance){ alert('假餘額不足'); return; }
   const h=playHand();
   const settled=applyBet(h, choice, amt, false);
+  // Cards on screen ARE the ones used for settle (same h object)
+  if(isFastMode()){
+    animating=false;
+    showHandUI(h, choice, amt, settled, false);
+    showHandPopup(h, settled, false);
+    renderAll(true); drawChart();
+    return;
+  }
+  animating=true;
+  clearCardBoard();
+  // Update text labels first (pts fill in during animation)
+  document.getElementById('handLabel').innerHTML='本手押：<span style="color:'+(choice==='B'?'var(--banker)':(choice==='P'?'var(--player)':'var(--tie)'))+'">'+sideName(choice)+'</span> <span class="amt">'+amt+'</span>';
+  document.getElementById('resLine').textContent='開出：…';
+  document.getElementById('pnlLine').textContent='本手：開牌中';
+  document.getElementById('pPts').textContent='—';
+  document.getElementById('bPts').textContent='—';
+  document.getElementById('pCards').textContent='';
+  document.getElementById('bCards').textContent='';
+  await animateDeal(h);
   showHandUI(h, choice, amt, settled, false);
   showHandPopup(h, settled, false);
-  renderAll(true);
-  drawChart();
+  renderAll(true); drawChart();
+  animating=false;
 }
 
 function fastPave(n){
+  if(animating) return;
   suppressPopup=true;
   let last=null;
   for(let i=0;i<n;i++){
@@ -577,7 +755,7 @@ function fastPave(n){
     applyBet(h, null, 0, true);
   }
   suppressPopup=false;
-  if(last) showHandUI(last, null, 0, null, true);
+  if(last){ showHandUI(last, null, 0, null, true); renderCardsInstant(last); }
   renderAll(true); drawChart();
 }
 
@@ -592,6 +770,7 @@ function newShoe(keepStats){
   document.getElementById('bPts').textContent='—';
   document.getElementById('pCards').textContent='';
   document.getElementById('bCards').textContent='';
+  clearCardBoard();
   document.getElementById('deltaDetail').textContent=keepStats?'自動換鞋／清路（紀錄保留）':'已新鞋／清路';
   renderAll(true);
 }
@@ -763,7 +942,7 @@ function toggleAuto(){
   startAuto();
 }
 async function startAuto(){
-  if(auto.running) return;
+  if(auto.running || animating) return;
   auto.running=true; auto.stop=false;
   auto.motto=document.getElementById('autoMotto').value;
   auto.amt=Math.max(1,Math.floor(Number(document.getElementById('autoAmt').value)||100));
@@ -873,11 +1052,12 @@ window.__BAC__={
   appendRoad, buildDerivedColumns, detectPatterns, findAllPatterns, placeBeads, columnsRef:()=>columns,
   setColumns:(c)=>{columns=c; historyNonTie=[]; for(const col of c) for(const b of col) historyNonTie.push(b.side);},
   history:()=>historyNonTie, countBeads, fastPave, newShoe, playHand, leadingTies:()=>leadingTies,
-  settle, autoPredict, startAuto, stopAuto, resetStats,
+  settle, autoPredict, startAuto, stopAuto, resetStats, bankerDraws, cardVal, tot, makeShoe, drawCard,
+  getShoe:()=>shoe.slice(), getShoeLen:()=>shoe.length,
   getStats:()=>Object.assign({},stats), getBalance:()=>balance, getAuto:()=>Object.assign({},auto),
   getBalHistory:()=>balHistory.slice(), getTheoHistory:()=>theoHistory.slice(),
   setBalance:(v)=>{balance=v; updateStatsUI();},
-  theoExpected
+  theoExpected, renderCardsInstant, clearCardBoard, dealBet, isFastMode
 };
 
 updateStatsUI(); renderAll(true); drawChart();
